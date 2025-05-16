@@ -1,0 +1,19 @@
+{
+  "name": "gridirondb-seed",
+  "version": "1.0.0",
+  "description": "Seed script for GridironGlobal database",
+  "main": "seed.js",
+  "scripts": {
+    "seed": "ts-node seed.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "latest",
+    "bcrypt": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
+    "@types/node": "^18.15.11",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  }
+}
