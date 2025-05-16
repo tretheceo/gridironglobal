@@ -32,7 +32,7 @@ async function main() {
     // Create admin user
     const adminUser = await prisma.user.create({
       data: {
-        email: 'admin@gridironglobal.com',
+        email: 'admin@gridirongloba.com',
         password: await hash('Admin123!', 10),
         role: UserRole.ADMIN,
         isVerified: true,
@@ -63,9 +63,15 @@ async function main() {
       id: string;
       name: string;
       country: string;
-      city: string;
-      leagueLevel: string;
+      city: string | null;
+      leagueLevel: string | null;
+      description: string | null;
+      logoUrl: string | null;
+      websiteUrl: string | null;
+      foundedYear: number | null;
       ownerId: string;
+      createdAt?: Date;
+      updatedAt?: Date;
     };
     
     type JobListing = {
@@ -73,8 +79,8 @@ async function main() {
       title: string;
       teamId: string;
       country: string;
-      city: string;
-      leagueLevel: string;
+      city: string | null;
+      leagueLevel: string | null;
       positions: string[];
     };
     
@@ -279,7 +285,7 @@ async function main() {
         appliedJobs.push(jobIndex);
         
         const teamForJob = teams.find(t => t.id === jobListings[jobIndex].teamId);
-        const teamName = teamForJob ? teamForJob.name : "the team";
+        const teamName = teamForJob?.name || "the team"; // Use optional chaining and provide a fallback
         
         const application = await prisma.application.create({
           data: {
