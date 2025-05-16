@@ -179,7 +179,7 @@ async function main() {
     }
   }
 
-const jobListings: {
+type jobListings: {
   id: string;
   title: string;
   company: string;
