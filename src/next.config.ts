@@ -1,7 +1,7 @@
 // next.config.js
 const nextConfig = {
   experimental: {
-    appDir: true, // ✅ Required for App Router
+    appDir: true, 
   },
 };
 
