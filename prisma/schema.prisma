@@ -1,0 +1,203 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model - core authentication and role management
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?   // Hashed password (null if using OAuth)
+  role          UserRole  @default(PLAYER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isVerified    Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  
+  // Relations
+  profile       Profile?
+  ownedTeams    Team[]
+  sentMessages     Message[]  @relation("MessageSender")
+  receivedMessages Message[]  @relation("MessageReceiver")
+  applications  Application[] @relation("Applicant")
+  favorites     Favorite[]
+}
+
+enum UserRole {
+  PLAYER
+  COACH
+  RECRUITER
+  ADMIN
+}
+
+// Profile model - detailed user information
+model Profile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  type              ProfileType
+  firstName         String
+  lastName          String
+  bio               String?  @db.Text
+  age               Int?
+  height            Float?   // In cm
+  weight            Float?   // In kg
+  nationality       String?
+  positions         String[] // Array of positions
+  experience        String?
+  preferredCountries String[]
+  videoUrls         String[] // Array of video URLs
+  resumeUrl         String?
+  stats             Json?    // Flexible stats storage
+  awards            String[] // Array of awards
+  languages         String[] // Array of languages
+  photoUrl          String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favorited         Favorite[] @relation("FavoritedProfile")
+  
+  @@index([userId])
+}
+
+enum ProfileType {
+  PLAYER
+  COACH
+}
+
+// Team model - team/organization information
+model Team {
+  id            String    @id @default(cuid())
+  name          String
+  country       String
+  city          String?
+  leagueLevel   String?
+  description   String?   @db.Text
+  logoUrl       String?
+  websiteUrl    String?
+  foundedYear   Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  ownerId       String
+  
+  // Relations
+  owner         User      @relation(fields: [ownerId], references: [id])
+  jobListings   JobListing[]
+  favorited     Favorite[] @relation("FavoritedTeam")
+  
+  @@index([ownerId])
+}
+
+// JobListing model - job opportunities
+model JobListing {
+  id              String    @id @default(cuid())
+  title           String
+  description     String    @db.Text
+  teamId          String
+  positions       String[]  // Array of positions
+  country         String
+  city            String?
+  leagueLevel     String?
+  compensation    String?
+  housing         Boolean   @default(false)
+  contractLength  String?
+  tryoutInfo      String?
+  visaAssistance  Boolean   @default(false)
+  startDate       DateTime?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  // Relations
+  team            Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  applications    Application[]
+  favorited       Favorite[] @relation("FavoritedJob")
+  
+  @@index([teamId])
+  @@index([country])
+  @@index([positions])
+}
+
+// Application model - job applications
+model Application {
+  id            String    @id @default(cuid())
+  jobListingId  String
+  applicantId   String
+  status        ApplicationStatus @default(PENDING)
+  coverLetter   String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Relations
+  jobListing    JobListing @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
+  applicant     User       @relation("Applicant", fields: [applicantId], references: [id], onDelete: Cascade)
+  
+  @@unique([jobListingId, applicantId])
+  @@index([jobListingId])
+  @@index([applicantId])
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+// Message model - internal messaging system
+model Message {
+  id          String    @id @default(cuid())
+  senderId    String
+  receiverId  String
+  content     String    @db.Text
+  read        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  sender      User      @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver    User      @relation("MessageReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  @@index([senderId])
+  @@index([receiverId])
+}
+
+// Favorite model - saved profiles, teams, or job listings
+model Favorite {
+  id            String    @id @default(cuid())
+  userId        String
+  profileId     String?
+  jobListingId  String?
+  teamId        String?
+  type          FavoriteType
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profile       Profile?  @relation("FavoritedProfile", fields: [profileId], references: [id], onDelete: Cascade)
+  jobListing    JobListing? @relation("FavoritedJob", fields: [jobListingId], references: [id], onDelete: Cascade)
+  team          Team?     @relation("FavoritedTeam", fields: [teamId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, profileId, type])
+  @@unique([userId, jobListingId, type])
+  @@unique([userId, teamId, type])
+  @@index([userId])
+  @@index([profileId])
+  @@index([jobListingId])
+  @@index([teamId])
+}
+
+enum FavoriteType {
+  PROFILE
+  JOB
+  TEAM
+}
