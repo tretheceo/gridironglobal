@@ -1,7 +1,7 @@
 // app/page.tsx
 
 import React from 'react';
-import PlayerCard from './components/PlayerCard';
+import PlayerCard from './components/player-card';
 
 interface Player {
   id: number;
