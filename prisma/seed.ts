@@ -179,8 +179,12 @@ async function main() {
     }
   }
 
-  // Job Listings
-  const jobListings = [];
+const jobListings: {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+
   const jobTitles = ['Quarterback Needed', 'Looking for Defensive Linemen', 'Wide Receiver Position Open', 'Offensive Line Coach Wanted', 'Defensive Coordinator Position'];
   const contractLengths = ['1 season', '2 seasons', '1 year', '6 months'];
 
