@@ -32,4 +32,12 @@ const Avatar: React.FC<AvatarProps> = ({ src, alt, size = 'medium' }) => {
           className="object-cover w-full h-full"
         />
       ) : (
-        <div className="flex items-center justify-center
+        <div className="flex items-center justify-center bg-gray-300 text-white font-semibold">
+          {alt.charAt(0).toUpperCase()}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Avatar;
